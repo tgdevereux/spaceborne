@@ -1,3 +1,4 @@
+require 'airborne'
 require "spaceborne/version"
 require 'rest-client'
 require 'byebug'
