@@ -35,8 +35,12 @@ module Airborne
         begin
           @request_body = options[:body].nil? ? '' : options[:body]
           if options[:body].is_a?(Hash)
-            headers.merge!(no_restclient_headers: true)
-            @request_body = @request_body.to_json
+            if headers.delete(:nonjson_data)
+              headers.delete('Content-Type')
+            else
+              headers.merge!(no_restclient_headers: true)
+              @request_body = @request_body.to_json
+            end
           end
           RestClient.send(method, get_url(url), @request_body, headers)
         rescue RestClient::Exception => e

@@ -43,10 +43,18 @@ describe Spaceborne do
       expect_header(content_type: 'application/json; charset=utf-8')
     end
   end
-  it "Post" do
+  it "Post w json" do
     wrap_request do
       post "#{SIMPLE_URL}/todos", { title: 'Learn Elm', created_by: '1' },
         {}
+      expect_status(201)
+      expect_header(content_type: 'application/json; charset=utf-8')
+    end
+  end
+  it "Post w nonjson" do
+    wrap_request do
+      post "#{SIMPLE_URL}/todos", { title: 'Learn Elm', created_by: '1' },
+        {nonjson_data: true}
       expect_status(201)
       expect_header(content_type: 'application/json; charset=utf-8')
     end
