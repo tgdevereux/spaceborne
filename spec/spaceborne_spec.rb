@@ -2,6 +2,7 @@ require 'spec_helper'
 
 describe Spaceborne do
   include Spaceborne
+  SIMPLE_URL = 'http://localhost:3000'
   TRELLO_BOARD_ID = '555c8e81e8d5aff570505f5b'
 
   it 'has a version number' do
@@ -32,6 +33,22 @@ describe Spaceborne do
       expect_header_types('set_cookie.*', :string )
       expect_json('*', id: /^[0-9a-f]{24}$/)
       expect_json_types('*', id: :string)
+    end
+  end
+
+  it "Get" do
+    wrap_request do
+      get "#{SIMPLE_URL}/todos", {}
+      expect_status(200)
+      expect_header(content_type: 'application/json; charset=utf-8')
+    end
+  end
+  it "Post" do
+    wrap_request do
+      post "#{SIMPLE_URL}/todos", { title: 'Learn Elm', created_by: '1' },
+        {}
+      expect_status(201)
+      expect_header(content_type: 'application/json; charset=utf-8')
     end
   end
 

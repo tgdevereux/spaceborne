@@ -10,7 +10,7 @@ module Spaceborne
   rescue Exception => e
     puts "REQUEST: #{response.request.method.upcase} #{response.request.url}"
     puts "  HEADERS:\n#{JSON::pretty_generate(response.request.headers)}" 
-    puts "  PAYLOAD:\n#{response.request.payload}" if response.request.payload
+    puts "  PAYLOAD:\n#{@request_body}" if @request_body
     puts "RESPONSE: #{response.code}"
     puts "  HEADERS:\n#{JSON::pretty_generate(response.headers)}"
     is_json = response.headers[:content_type].include?('application/json')
@@ -29,12 +29,16 @@ module Airborne
   module RestClientRequester
     def make_request(method, url, options = {})
       @json_body = nil
+      @requet_body = nil
       headers = base_headers.merge(options[:headers] || {})
       res = if method == :post || method == :patch || method == :put
         begin
-          request_body = options[:body].nil? ? '' : options[:body]
-          request_body = request_body.to_json if options[:body].is_a?(Hash)
-          RestClient.send(method, get_url(url), request_body, headers)
+          @request_body = options[:body].nil? ? '' : options[:body]
+          if options[:body].is_a?(Hash)
+            headers.merge!(no_restclient_headers: true)
+            @request_body = @request_body.to_json
+          end
+          RestClient.send(method, get_url(url), @request_body, headers)
         rescue RestClient::Exception => e
           e.response
         end
@@ -47,7 +51,13 @@ module Airborne
       end
       res
     end
+
+    private
+    def base_headers
+      { "Content-Type" => 'application/json' }.merge(Airborne.configuration.headers || {})
+    end
   end
+
   module RequestExpectations
     def call_with_relative_path(data, args)
       if args.length == 2
