@@ -16,10 +16,12 @@ module Spaceborne
     puts "  PAYLOAD:\n#{@request_body}" if @request_body
     puts "RESPONSE: #{response.code}"
     puts "  HEADERS:\n#{JSON::pretty_generate(response.headers)}"
-    if is_json?(response.headers)
-      puts "  JSON_BODY\n#{JSON::pretty_generate(json_body)}" 
-    else
-      puts "  BODY\n#{response.body}"
+    if response.request.method.downcase != 'head'
+      if is_json?(response.headers)
+        puts "  JSON_BODY\n#{JSON::pretty_generate(json_body)}" 
+      else
+        puts "  BODY\n#{response.body}"
+      end
     end
     raise e
   end
