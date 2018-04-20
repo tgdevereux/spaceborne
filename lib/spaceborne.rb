@@ -6,7 +6,7 @@ require 'json'
 
 module Spaceborne
   def is_json?(headers)
-    headers.get(:content_type) && headers[:content_type].include?('application/json')
+    headers.has_key?(:content_type) && headers[:content_type].include?('application/json')
   end
   def wrap_request(&block)
     block.call
