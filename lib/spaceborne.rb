@@ -5,6 +5,9 @@ require 'byebug'
 require 'json'
 
 module Spaceborne
+  def is_json?(headers)
+    headers.get(:content_type) && headers[:content_type].include?('application/json')
+  end
   def wrap_request(&block)
     block.call
   rescue Exception => e
@@ -13,9 +16,11 @@ module Spaceborne
     puts "  PAYLOAD:\n#{@request_body}" if @request_body
     puts "RESPONSE: #{response.code}"
     puts "  HEADERS:\n#{JSON::pretty_generate(response.headers)}"
-    is_json = response.headers[:content_type].include?('application/json')
-    puts "  JSON_BODY\n#{JSON::pretty_generate(json_body)}" if is_json
-    puts "  BODY\n#{response.body}" unless is_json
+    if is_json?(response.headers)
+      puts "  JSON_BODY\n#{JSON::pretty_generate(json_body)}" 
+    else
+      puts "  BODY\n#{response.body}"
+    end
     raise e
   end
 end

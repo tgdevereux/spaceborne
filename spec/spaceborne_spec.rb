@@ -59,5 +59,19 @@ describe Spaceborne do
       expect_header(content_type: 'application/json; charset=utf-8')
     end
   end
-
+  it "get of particular todo" do
+    wrap_request do
+      get 'http://localhost:3000/todos/3'
+      expect_status(200)
+      expect_json(title: 'do_not_delete')
+      expect_json_types(id: :integer, title: :string, created_by: :string,
+        created_at: :date, updated_at: :date)
+    end
+  end
+  it "Put w bad data" do
+    wrap_request do
+      put "http://localhost:3000/todos/3", {bad_data: 'oops'}
+      expect_status(204)
+    end
+  end
 end
