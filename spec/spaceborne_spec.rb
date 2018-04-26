@@ -36,14 +36,14 @@ describe Spaceborne do
     end
   end
 
-  it "Get" do
+  it "Get", todos: true do
     wrap_request do
       get "#{SIMPLE_URL}/todos", {}
       expect_status(200)
       expect_header(content_type: 'application/json; charset=utf-8')
     end
   end
-  it "Post w json" do
+  it "Post w json", todos: true do
     wrap_request do
       post "#{SIMPLE_URL}/todos", { title: 'Learn Elm', created_by: '1' },
         {}
@@ -51,7 +51,7 @@ describe Spaceborne do
       expect_header(content_type: 'application/json; charset=utf-8')
     end
   end
-  it "Post w nonjson" do
+  it "Post w nonjson", todos: true do
     wrap_request do
       post "#{SIMPLE_URL}/todos", { title: 'Learn Elm', created_by: '1' },
         {nonjson_data: true}
@@ -59,7 +59,7 @@ describe Spaceborne do
       expect_header(content_type: 'application/json; charset=utf-8')
     end
   end
-  it "get of particular todo" do
+  it "get of particular todo", todos: true do
     wrap_request do
       get 'http://localhost:3000/todos/3'
       expect_status(200)
@@ -68,7 +68,7 @@ describe Spaceborne do
         created_at: :date, updated_at: :date)
     end
   end
-  it "Put w bad data" do
+  it "Put w bad data", todos: true do
     wrap_request do
       put "http://localhost:3000/todos/3", {bad_data: 'oops'}
       expect_status(204)
