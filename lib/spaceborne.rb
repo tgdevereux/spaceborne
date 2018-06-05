@@ -36,7 +36,11 @@ module Airborne
   module RestClientRequester
     def make_request(method, url, options = {})
       @json_body = nil
-      @requet_body = nil
+      @request_body = nil
+      if options[:headers].has_key?(:use_proxy)
+        proxy_option = options[:headers][:use_proxy]
+        RestClient.proxy = proxy_option
+      end
       headers = base_headers.merge(options[:headers] || {})
       res = if method == :post || method == :patch || method == :put
         begin
