@@ -1,4 +1,5 @@
 require 'spec_helper'
+require 'byebug'
 
 describe Spaceborne do
   include Spaceborne
@@ -73,5 +74,30 @@ describe Spaceborne do
       put "http://localhost:3000/todos/3", {bad_data: 'oops'}
       expect_status(204)
     end
+  end
+  it "validates the cases in the readme" do
+    fake = {name: "Alex",
+            address: {
+              street: "Area 51",
+              city: "Roswell",
+              state: "NM",
+              coordinates: {
+                latitude: 33.3872,
+                longitude: 104.5281 } },
+            phones: [
+              { type: "cell",
+                number: "123-456-7890"},
+              { type: "home",
+                number: "987-654-3210"} ]}
+    expect_json_fake(fake, name: 'Alex') # exact match because you asked for Alex
+    expect_json_types_fake(fake, name: :string, address: {street: :string, city: :string, state: :string,
+                                               coordinates: {latitude: :float, longitude: :float}},
+                      phones: :array_of_objects) # all the types and structure (note cannot specify array checking)
+    expect_json_fake(fake, 'address', state: /^[A-Z]{2}$/) # ensures address/state has 2 capital letters
+    expect_json_types_fake(fake, 'phones.*', type: :string, number: :string) # looks at all elements in array
+    expect_json_types_fake(fake, 'phones.1', type: :string, number: :string) # looks at second element in array
+    expect_json_keys_fake(fake, [:name, :address, :phones])
+    expect_json_keys_fake(fake, 'address', [:street, :city, :state, :coordinates])
+    expect_json_sizes_fake(fake, phones: 2)
   end
 end

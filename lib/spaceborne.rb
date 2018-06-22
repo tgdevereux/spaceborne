@@ -84,9 +84,21 @@ module Airborne
       end
     end
 
+    def expect_json_types_fake(json_body, *args)
+      call_with_relative_path(json_body, args) do |param, body|
+        expect_json_types_impl(param, body)
+      end
+    end
+    
     def expect_json_types(*args)
       call_with_relative_path(json_body, args) do |param, body|
         expect_json_types_impl(param, body)
+      end
+    end
+
+    def expect_json_fake(json_body, *args)
+      call_with_relative_path(json_body, args) do |param, body|
+        expect_json_impl(param, body)
       end
     end
 
@@ -94,6 +106,28 @@ module Airborne
       call_with_relative_path(json_body, args) do |param, body|
         expect_json_impl(param, body)
       end
+    end
+
+    def expect_json_keys_fake(json_body, *args)
+      call_with_relative_path(json_body, args) do |param, body|
+        expect(body.keys).to include(*param)
+      end
+    end
+
+    def expect_json_keys(*args)
+      call_with_relative_path(json_body, args) do |param, body|
+        expect(body.keys).to include(*param)
+      end
+    end
+
+    def expect_json_sizes_fake(json_body, *args)
+      args.push(convert_expectations_for_json_sizes(args.pop))
+      expect_json_types_fake(json_body, *args)
+    end
+
+    def expect_json_sizes(*args)
+      args.push(convert_expectations_for_json_sizes(args.pop))
+      expect_json_types(json_body, *args)
     end
 
     def expect_header_types(*args)
