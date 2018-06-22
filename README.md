@@ -203,8 +203,29 @@ Validation for headers follows the same pattern as above, although nesting of mu
 4. Expectations for headers use the same form as the expectations for json bodies
   * `expect_header same arguments/handling as expect_json`
   * `expect_header_types same arguments/handling as expect_json_types`
-5. Expectations on a response with an array of hashes with keys that are unknown, but that have a defined structure are supported (using the '*' in a path similar to 
-6. It is possible to use non-json data in a request
+5. It is possible to use non-json data in a request
+6. Expectations on a response with an array of hashes with keys that are unknown, but that have a defined structure are supported (using the '*' in a path)
+
+The following example shows how this works
+
+```ruby
+{ array_of_hashes: [
+   { husband: {first: 'fred', last: 'flinstone'}},
+   { buddy: {first: 'barney', last: 'rubble'}},
+   { wife: {first: 'wilma', last: 'flinstone'}},
+  ],
+  hash_of_hashes: 
+   { husband: {first: 'fred', last: 'flinstone'},
+     buddy: {first: 'barney', last: 'rubble'},
+     wife: {first: 'wilma', last: 'flinstone'}
+  }
+}
+```
+You can now validate the fact that each element in the collection has a key which is variant, but a value that has a defined format (first and last are strings).
+
+    expect_json_types('array_of_hashes.*.*', first: :string, last: :string)
+    expect_json_types('hash_of_hashes.*', first: :string, last: :string)
+
 
 ## Development
 
