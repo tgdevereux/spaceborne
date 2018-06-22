@@ -83,7 +83,18 @@ describe Spaceborne do
               state: "NM",
               coordinates: {
                 latitude: 33.3872,
-                longitude: 104.5281 } },
+                longitude: 104.5281 },
+            },
+            array_of_hashes: [
+              { husband: {first: 'fred', last: 'flinstone'}},
+              { buddy: {first: 'barney', last: 'rubble'}},
+              {  wife: {first: 'wilma', last: 'flinstone'}},
+            ],
+            hash_of_hashes: 
+              { husband: {first: 'fred', last: 'flinstone'},
+                buddy: {first: 'barney', last: 'rubble'},
+                wife: {first: 'wilma', last: 'flinstone'}
+              },
             phones: [
               { type: "cell",
                 number: "123-456-7890"},
@@ -99,5 +110,7 @@ describe Spaceborne do
     expect_json_keys_fake(fake, [:name, :address, :phones])
     expect_json_keys_fake(fake, 'address', [:street, :city, :state, :coordinates])
     expect_json_sizes_fake(fake, phones: 2)
+    expect_json_types_fake(fake, 'array_of_hashes.*.*', first: :string, last: :string)
+    expect_json_types_fake(fake, 'hash_of_hashes.*', first: :string, last: :string)
   end
 end

@@ -143,6 +143,26 @@ expect_json_keys('address', [:street, :city, :state, :coordinates]) # ensure spe
 expect_json_sizes(phones: 2) # expect the phones array size to be 2
 ```
 
+Additionally, if an entire object could be null, but you'd still want to test the types if it does exist, you can wrap the expectations in a call to `optional`:
+
+```ruby
+it 'should allow optional nested hash' do
+  get '/simple_path_get' #may or may not return coordinates
+  expect_json_types('address.coordinates', optional(latitude: :float, longitude: :float))
+end
+```
+
+Additionally, when calling `expect_json`, you can provide a regex pattern in a call to `regex`:
+
+```ruby
+describe 'sample spec' do
+  it 'should validate types' do
+    get 'http://example.com/api/v1/simple_get' #json api that returns { "name" : "John Doe" }
+    expect_json(name: regex("^John"))
+  end
+end
+```
+
 When calling `expect_json` or `expect_json_types`, you can optionally provide a block and run your own `rspec` expectations:
 
 ```ruby
@@ -173,22 +193,43 @@ When calling `expect_*_types`, these are the valid types that can be tested agai
 
 If the properties are optional and may not appear in the response, you can append `_or_null` to the types above.
 
-
+Validation for headers follows the same pattern as above, although nesting of multiple levels isn't going to be needed.
 	
-## Development
-
-To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release`, which will create a git tag for the version, push git commits and tags, and push the `.gem` file to [rubygems.org](https://rubygems.org).
-
 ## Extensions to Airborne
 
 1. Uses curlyrest to allow extension of rest-client with curl requests
-2. Bundles groups of expectations so that if any fail, you will actually see the request and response printed out, rather than just seeing the expectation that failed
-3. json_body is only calculated once after request rather than on each call
+2. Uses wrap_request to bundle groups of expectations so that if any fail, you will actually see the request and response printed out, rather than just seeing the expectation that failed
+3. json_body is only parsed once after a request rather than on each expect call
 4. Expectations for headers use the same form as the expectations for json bodies
   * `expect_header same arguments/handling as expect_json`
   * `expect_header_types same arguments/handling as expect_json_types`
-5. Expectations returning a hash with keys that are unknown, but that have a defined structure are supported
-6. It is possible to use non-json data in a request
+5. It is possible to use non-json data in a request
+6. Expectations on a response with an array of hashes with keys that are unknown, but that have a defined structure are supported (using the '*' in a path)
+
+The following example shows how this works
+
+```ruby
+{ array_of_hashes: [
+   { husband: {first: 'fred', last: 'flinstone'}},
+   { buddy: {first: 'barney', last: 'rubble'}},
+   { wife: {first: 'wilma', last: 'flinstone'}},
+  ],
+  hash_of_hashes: 
+   { husband: {first: 'fred', last: 'flinstone'},
+     buddy: {first: 'barney', last: 'rubble'},
+     wife: {first: 'wilma', last: 'flinstone'}
+  }
+}
+```
+You can now validate the fact that each element in the collection has a key which is variant, but a value that has a defined format (first and last are strings).
+
+    expect_json_types('array_of_hashes.*.*', first: :string, last: :string)
+    expect_json_types('hash_of_hashes.*', first: :string, last: :string)
+
+
+## Development
+
+To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release`, which will create a git tag for the version, push git commits and tags, and push the `.gem` file to [rubygems.org](https://rubygems.org).
 
 ## Contributing
 
