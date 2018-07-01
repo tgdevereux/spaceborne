@@ -1,0 +1,11 @@
+{ "array_of_hashes": [
+   { "husband": {"first": "fred", "last": "flinstone"}},
+   { "buddy": {"first": "barney", "last": "rubble"}},
+   { "wife": {"first": "wilma", "last": "flinstone"}}
+  ],
+  "hash_of_hashes": 
+   { "husband": {"first": "fred", "last": "flinstone"},
+     "buddy": {"first": "barney", "last": "rubble"},
+     "wife": {"first": "wilma", "last": "flinstone"}
+  }
+}

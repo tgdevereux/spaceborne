@@ -1,77 +1,41 @@
 require 'spec_helper'
 
+include Spaceborne
+
 describe Spaceborne do
-  include Spaceborne
-  SIMPLE_URL = 'http://localhost:3000'
-  TRELLO_BOARD_ID = '555c8e81e8d5aff570505f5b'
-
-  it 'has a version number' do
-    expect(Spaceborne::VERSION).not_to be nil
+  it "returns a version" do
+    expect(Spaceborne::VERSION).to match(/[^.]+\.[^.]+\.[^.]$/)
   end
-
-  it "does a simple get" do
-    get 'http://example.com', {Accept: 'json'}
-    expect_status(200)
+  it "is_json detects json headers" do
+    expect(is_json?(content_type: 'application/json')).to eq(true)
+    expect(is_json?(content_type: 'application/text')).to eq(false)
   end
-
-  it "trello API no key or token" do
-    wrap_request do
-      get "https://api.trello.com/1/boards/#{TRELLO_BOARD_ID}"
-      expect_status(200)
-      expect_header(content_type: 'application/json; charset=utf-8')
-      expect_header_types('set_cookie.*', :string )
-      expect_json(labelNames: {green: 'michelle greenz'})
-      expect_json_types('labelNames.*', :string)
+  context "readme examples" do
+    it "expectations working for first json response" do
+      mock_get('spaceborne_readme_1')
+      get '/spaceborne_readme_1', {}
+      expect_json(name: 'Alex') # exact match because you asked for Alex
+      expect_json_types(name: :string, address: {street: :string, city: :string, state: :string,
+                                                 coordinates: {latitude: :float, longitude: :float}},
+                        phones: :array_of_objects) # all the types and structure (cannot go into arrays this way)
+      expect_json('address', state: /^[A-Z]{2}$/) # ensures address/state has 2 capital letters
+      expect_json_types('phones.*', type: :string, number: :string) # looks at all elements in array
+      expect_json_types('phones.1', type: :string, number: :string) # looks at second element in array
+      expect_json_keys('address', [:street, :city, :state, :coordinates]) # ensure specified keys present
+      expect_json_sizes(phones: 2) # expect the phones array size to be 2
+    end
+    it "expectations working for second json response" do
+      mock_get('spaceborne_readme_2')
+      get '/spaceborne_readme_2'
+      expect_json_types('array_of_hashes.*.*', first: :string, last: :string)
+      expect_json_types('hash_of_hashes.*', first: :string, last: :string)
     end
   end
-
-  it "trello API lists - array check" do
-    wrap_request do
-      get "https://api.trello.com/1/boards/#{TRELLO_BOARD_ID}/lists"
-      expect_status(200)
-      expect_header(content_type: 'application/json; charset=utf-8')
-      expect_header_types('set_cookie.*', :string )
-      expect_json('*', id: /^[0-9a-f]{24}$/)
-      expect_json_types('*', id: :string)
-    end
+  it "header expectations follow spaceborne format" do
+    mock_get('spaceborne_readme_2', {foo: 'bar'})
+    get '/spaceborne_readme_2'
+    expect_header(foo: 'bar')
+    expect_header_types(foo: :string)
   end
-
-  it "Get", todos: true do
-    wrap_request do
-      get "#{SIMPLE_URL}/todos", {}
-      expect_status(200)
-      expect_header(content_type: 'application/json; charset=utf-8')
-    end
-  end
-  it "Post w json", todos: true do
-    wrap_request do
-      post "#{SIMPLE_URL}/todos", { title: 'Learn Elm', created_by: '1' },
-        {}
-      expect_status(201)
-      expect_header(content_type: 'application/json; charset=utf-8')
-    end
-  end
-  it "Post w nonjson", todos: true do
-    wrap_request do
-      post "#{SIMPLE_URL}/todos", { title: 'Learn Elm', created_by: '1' },
-        {nonjson_data: true}
-      expect_status(201)
-      expect_header(content_type: 'application/json; charset=utf-8')
-    end
-  end
-  it "get of particular todo", todos: true do
-    wrap_request do
-      get 'http://localhost:3000/todos/3'
-      expect_status(200)
-      expect_json(title: 'do_not_delete')
-      expect_json_types(id: :integer, title: :string, created_by: :string,
-        created_at: :date, updated_at: :date)
-    end
-  end
-  it "Put w bad data", todos: true do
-    wrap_request do
-      put "http://localhost:3000/todos/3", {bad_data: 'oops'}
-      expect_status(204)
-    end
-  end
+  
 end

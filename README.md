@@ -209,15 +209,15 @@ Validation for headers follows the same pattern as above, although nesting of mu
 The following example shows how this works
 
 ```ruby
-{ array_of_hashes: [
-   { husband: {first: 'fred', last: 'flinstone'}},
-   { buddy: {first: 'barney', last: 'rubble'}},
-   { wife: {first: 'wilma', last: 'flinstone'}},
+{ "array_of_hashes": [
+   { "husband": {"first": "fred", "last": "flinstone"}},
+   { "buddy": {"first": "barney", "last": "rubble"}},
+   { "wife": {"first": "wilma", "last": "flinstone"}}
   ],
-  hash_of_hashes: 
-   { husband: {first: 'fred', last: 'flinstone'},
-     buddy: {first: 'barney', last: 'rubble'},
-     wife: {first: 'wilma', last: 'flinstone'}
+  "hash_of_hashes": 
+   { "husband": {"first": "fred", "last": "flinstone"},
+     "buddy": {"first": "barney", "last": "rubble"},
+     "wife": {"first": "wilma", "last": "flinstone"}
   }
 }
 ```

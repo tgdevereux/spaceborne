@@ -37,7 +37,7 @@ module Airborne
     def make_request(method, url, options = {})
       @json_body = nil
       @request_body = nil
-      if options[:headers].has_key?(:use_proxy)
+      if options[:headers] && options[:headers].has_key?(:use_proxy)
         proxy_option = options[:headers][:use_proxy]
         RestClient.proxy = proxy_option
       end
@@ -69,7 +69,7 @@ module Airborne
 
     private
     def base_headers
-      { "Content-Type" => 'application/json' }.merge(Airborne.configuration.headers || {})
+      { content_type: :json }.merge(Airborne.configuration.headers || {})
     end
   end
 
@@ -113,7 +113,11 @@ module Airborne
     def get_by_path(path, json, &block)
       fail PathError, "Invalid Path, contains '..'" if /\.\./ =~ path
       type = false
-      parts = path.split('.')
+      if path.class == Symbol
+        parts = path.to_s.split('.')
+      else
+        parts = path.split('.')
+      end
       parts.each_with_index do |part, index|
         if part == '*' || part == '?'
           ensure_array_or_hash(path, json)
