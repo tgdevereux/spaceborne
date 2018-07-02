@@ -37,11 +37,6 @@ module StubHelper
     stub_request(:options, @base_url + url).to_return(headers: response_headers, body: nil, status: status)
   end
 
-  def mock_graphql(url, options = {}, status = 200)
-    stub_request(:graphql, @base_url + url).with(body: options[:request_body] || {})
-      .to_return(headers: options[:response_headers] || {}, body: get_json_response_file(url), status: status)
-  end
-
   private
 
   def get_json_response_file(name)

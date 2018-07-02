@@ -6,10 +6,28 @@ describe Spaceborne do
   it "returns a version" do
     expect(Spaceborne::VERSION).to match(/[^.]+\.[^.]+\.[^.]$/)
   end
+  it "ensure_array_or_hash" do
+    expect(ensure_array_or_hash('root', [])).to be nil
+    expect(ensure_array_or_hash('root', {})).to be nil
+    expect{ensure_array_or_hash('root', 'string')}.to raise_error(RSpec::Expectations::ExpectationNotMetError)
+  end
   it "is_json detects json headers" do
     expect(is_json?(content_type: 'application/json')).to eq(true)
     expect(is_json?(content_type: 'application/text')).to eq(false)
   end
+  specify { expect { wrap_request do
+                       mock_get('spaceborne_readme_1')
+                       get '/spaceborne_readme_1', {}
+                       expect_status(200)
+                       expect_json(name: 'Alexandra')
+                     end }.to raise_error(RSpec::Expectations::ExpectationNotMetError).and output.to_stdout }
+  specify { expect { wrap_request do
+                       mock_get('spaceborne_readme_1', {content_type: 'application/json'})
+                       get '/spaceborne_readme_1'
+                       expect_status(200)
+                       expect_json(name: 'Alexandra')
+                     end }.to raise_error(RSpec::Expectations::ExpectationNotMetError).and output.to_stdout }
+
   context "readme examples" do
     it "expectations working for first json response" do
       mock_get('spaceborne_readme_1')
@@ -37,5 +55,15 @@ describe Spaceborne do
     expect_header(foo: 'bar')
     expect_header_types(foo: :string)
   end
-  
+  it "use_proxy" do
+    mock_get('spaceborne_readme_2', {use_proxy: 'bar'})
+    get '/spaceborne_readme_2', {use_proxy: 'bar'}
+    expect_header(use_proxy: 'bar')
+  end
+  it "nonjson_data" do
+    mock_post('spaceborne_readme_2')
+    post '/spaceborne_readme_2', {foo: 'bar'}, {nonjson_data: true}
+    expect_header(nonjson_data: nil)
+    expect_header(content_type: nil)
+  end  
 end

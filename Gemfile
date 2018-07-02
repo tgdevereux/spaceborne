@@ -2,7 +2,7 @@ source 'https://rubygems.org'
 
 gemspec
 
-gem 'coveralls', require: false
+gem 'simplecov', require: false, group: :test
 
 group :test do
   gem 'webmock'

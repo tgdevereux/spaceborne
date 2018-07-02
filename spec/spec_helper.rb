@@ -1,5 +1,6 @@
-require 'coveralls'
-Coveralls.wear!
+require 'simplecov'
+SimpleCov.start
+
 require 'airborne'
 require 'spaceborne'
 require 'curlyrest'
