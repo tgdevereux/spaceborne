@@ -4,7 +4,7 @@ include Spaceborne
 
 describe Spaceborne do
   it "returns a version" do
-    expect(Spaceborne::VERSION).to match(/[^.]+\.[^.]+\.[^.]$/)
+    expect(Spaceborne::VERSION).to match(/[^.]+\.[^.]+\.[^.]+$/)
   end
   it "ensure_array_or_hash" do
     expect(ensure_array_or_hash('root', [])).to be nil
