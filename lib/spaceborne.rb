@@ -11,6 +11,7 @@ module Spaceborne
   def wrap_request(&block)
     block.call
   rescue Exception => e
+    puts "TIME: #{Time.now.strftime("%d/%m/%Y %H:%M")}"
     puts "REQUEST: #{response.request.method.upcase} #{response.request.url}"
     puts "  HEADERS:\n#{JSON::pretty_generate(response.request.headers)}" 
     puts "  PAYLOAD:\n#{@request_body}" if @request_body
