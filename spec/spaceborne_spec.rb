@@ -15,19 +15,23 @@ describe Spaceborne do
     expect(is_json?(content_type: 'application/json')).to eq(true)
     expect(is_json?(content_type: 'application/text')).to eq(false)
   end
-  specify { expect { wrap_request do
-                       mock_get('spaceborne_readme_1')
-                       get '/spaceborne_readme_1', {}
-                       expect_status(200)
-                       expect_json(name: 'Alexandra')
-                     end }.to raise_error(RSpec::Expectations::ExpectationNotMetError).and output.to_stdout }
-  specify { expect { wrap_request do
-                       mock_get('spaceborne_readme_1', {content_type: 'application/json'})
-                       get '/spaceborne_readme_1'
-                       expect_status(200)
-                       expect_json(name: 'Alexandra')
-                     end }.to raise_error(RSpec::Expectations::ExpectationNotMetError).and output.to_stdout }
-
+  context "wrap_request" do
+    specify { expect { wrap_request do
+                         mock_get('spaceborne_readme_1')
+                         get '/spaceborne_readme_1', {}
+                         expect_status(200)
+                         expect_json(name: 'Alexandra')
+                       end }.to raise_error(RSpec::Expectations::ExpectationNotMetError).and output.to_stdout }
+    specify { expect { wrap_request do
+                         mock_get('spaceborne_readme_1', {content_type: 'application/json'})
+                         get '/spaceborne_readme_1'
+                         expect_status(200)
+                         expect_json(name: 'Alexandra')
+                       end }.to raise_error(RSpec::Expectations::ExpectationNotMetError).and output.to_stdout }
+    specify { expect { wrap_request do
+                         expect(1).to eq(2)
+                       end }.to raise_error(RSpec::Expectations::ExpectationNotMetError) }
+  end
   context "readme examples" do
     it "expectations working for first json response" do
       mock_get('spaceborne_readme_1')
