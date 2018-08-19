@@ -29,6 +29,6 @@ describe 'expect path' do
   it 'should work with numberic properties' do
     mock_get('numeric_property')
     get '/numeric_property'
-    expect_json_keys('cars.0', [:make, :model])
+    expect_json_keys('cars.0', %i[make model])
   end
 end

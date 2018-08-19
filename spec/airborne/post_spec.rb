@@ -12,6 +12,8 @@ describe 'post' do
     url = 'http://www.example.com/simple_post'
     stub_request(:post, url)
     post '/simple_post', 'hello', content_type: 'text/plain'
-    expect(WebMock).to have_requested(:post, url).with(body: 'hello', headers: { 'Content-Type' => 'text/plain' })
+    expect(WebMock).to have_requested(:post, url).with(
+      body: 'hello', headers: { 'Content-Type' => 'text/plain' }
+    )
   end
 end

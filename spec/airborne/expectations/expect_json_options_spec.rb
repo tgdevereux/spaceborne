@@ -5,7 +5,7 @@ describe 'expect_json options' do
     it 'should require all expected properties' do
       mock_get 'simple_get'
       get '/simple_get'
-      expect{ expect_json(name: 'Alex', other: 'other') }.to raise_error(ExpectationNotMetError)
+      expect { expect_json(name: 'Alex', other: 'other') }.to raise_error(ExpectationNotMetError)
     end
 
     it 'should not require the actual properties' do
@@ -19,7 +19,7 @@ describe 'expect_json options' do
     it 'should require all actual properties' do
       mock_get 'simple_get'
       get '/simple_get'
-      expect{ expect_json(name: 'Alex') }.to raise_error(ExpectationError)
+      expect { expect_json(name: 'Alex') }.to raise_error(ExpectationError)
     end
 
     it 'should not require the expected properties' do
@@ -33,19 +33,19 @@ describe 'expect_json options' do
     it 'should require all actual properties' do
       mock_get 'simple_get'
       get '/simple_get'
-      expect{ expect_json(name: 'Alex') }.to raise_error(ExpectationError)
+      expect { expect_json(name: 'Alex') }.to raise_error(ExpectationError)
     end
 
     it 'should require all expected properties' do
       mock_get 'simple_get'
       get '/simple_get'
-      expect{ expect_json(name: 'Alex', other: 'other') }.to raise_error(ExpectationNotMetError)
+      expect { expect_json(name: 'Alex', other: 'other') }.to raise_error(ExpectationNotMetError)
     end
 
     it 'should require all expected properties' do
       mock_get 'simple_get'
       get '/simple_get'
-      expect{ expect_json(name: 'Alex', nested: {}) }.to raise_error(ExpectationNotMetError)
+      expect { expect_json(name: 'Alex', nested: {}) }.to raise_error(ExpectationNotMetError)
     end
   end
 

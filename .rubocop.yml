@@ -1,0 +1,36 @@
+Style/FrozenStringLiteralComment:
+  Enabled: false
+
+Metrics/BlockLength:
+  Exclude:
+    - 'Rakefile'
+    - '**/*.rake'
+    - 'spec/**/*.rb'
+    - '*.gemspec'
+
+Metrics/MethodLength:
+  Exclude: 
+    - 'bin/*'
+
+Metrics/ModuleLength:
+  Exclude:
+    - 'Rakefile'
+    - '**/*.rake'
+    - 'spec/**/*.rb'
+    - 'bin/*'
+
+Metrics/ClassLength:
+  Exclude:
+    - 'bin/*'
+
+Metrics/LineLength:
+  Exclude:
+    - 'spec/airborne/**/*.rb'
+
+Style/DateTime:
+  Exclude:
+    - 'spec/airborne/**/*.rb'
+
+Lint/RescueException:
+  Exclude:
+    - 'lib/spaceborne.rb'

@@ -1,80 +1,140 @@
 require 'airborne'
-require "spaceborne/version"
+require 'spaceborne/version'
 require 'rest-client'
 require 'byebug'
 require 'json'
 
+# module for apitesting with spaceborne
 module Spaceborne
-  def is_json?(headers)
-    headers.has_key?(:content_type) && headers[:content_type].include?('application/json')
+  def json?(headers)
+    headers.key?(:content_type) &&
+      headers[:content_type].include?('application/json')
   end
-  def wrap_request(&block)
-    block.call
+
+  def add_time
+    "TIME: #{Time.now.strftime('%d/%m/%Y %H:%M')}"
+  end
+
+  def add_request
+    if @request_body
+      "REQUEST: #{response.request.method.upcase} #{response.request.url}"\
+      "  HEADERS:\n#{JSON.pretty_generate(response.request.headers)}"\
+      "  PAYLOAD:\n#{@request_body}"
+    else
+      ''
+    end
+  end
+
+  def add_response
+    "RESPONSE: #{response.code}"\
+    "  HEADERS:\n#{JSON.pretty_generate(response.headers)}"\
+    << response_body
+  end
+
+  def response_body
+    return '' if response.request.method.casecmp('head').zero?
+    str = if json?(response.headers)
+            "  JSON_BODY\n#{JSON.pretty_generate(json_body)}"
+          else
+            "  BODY\n#{response.body}"
+          end
+    str
+  end
+
+  def request_info(str = '')
+    str << add_time << add_request << add_response
+    str
+  end
+
+  def wrap_request
+    yield
   rescue Exception => e
     raise e unless response
-    puts "TIME: #{Time.now.strftime("%d/%m/%Y %H:%M")}"
-    puts "REQUEST: #{response.request.method.upcase} #{response.request.url}"
-    puts "  HEADERS:\n#{JSON::pretty_generate(response.request.headers)}" 
-    puts "  PAYLOAD:\n#{@request_body}" if @request_body
-    puts "RESPONSE: #{response.code}"
-    puts "  HEADERS:\n#{JSON::pretty_generate(response.headers)}"
-    if response.request.method.downcase != 'head'
-      if is_json?(response.headers)
-        puts "  JSON_BODY\n#{JSON::pretty_generate(json_body)}" 
-      else
-        puts "  BODY\n#{response.body}"
-      end
-    end
+    puts request_info
     raise e
   end
 end
 
+# monkeypatch Airborne
 module Airborne
   def json_body
     @json_body ||= JSON.parse(response.body, symbolize_names: true)
-  rescue 
-    fail InvalidJsonError, 'Api request returned invalid json'
+  rescue StandardError
+    raise InvalidJsonError, 'Api request returned invalid json'
   end
+
+  # spaceborne enhancements
   module RestClientRequester
-    def make_request(method, url, options = {})
-      @json_body = nil
-      @request_body = nil
-      if options[:headers] && options[:headers].has_key?(:use_proxy)
-        proxy_option = options[:headers][:use_proxy]
-        RestClient.proxy = proxy_option
-      end
-      headers = base_headers.merge(options[:headers] || {})
-      res = if method == :post || method == :patch || method == :put
-        begin
-          @request_body = options[:body].nil? ? '' : options[:body]
-          if options[:body].is_a?(Hash)
-            if headers.delete(:nonjson_data)
-              headers.delete('Content-Type')
-            else
-              headers.merge!(no_restclient_headers: true)
-              @request_body = @request_body.to_json
-            end
-          end
-          RestClient.send(method, get_url(url), @request_body, headers)
-        rescue RestClient::Exception => e
-          e.response
-        end
+    def body?(method)
+      case method
+      when :post, :patch, :put
+        true
       else
-        begin
-          RestClient.send(method, get_url(url), headers)
-        rescue RestClient::Exception => e
-          e.response
-        end
+        false
       end
-      res
+    end
+
+    def split_options(options)
+      local = {}
+      local[:nonjson_data] = options.dig(:headers, :nonjson_data)
+      options[:headers].delete(:nonjson_data) if local[:nonjson_data]
+      local[:is_hash] = options[:body].is_a?(Hash)
+      local[:proxy] = options.dig(:headers, :use_proxy)
+      local
+    end
+
+    def calc_headers(options, local)
+      headers = base_headers.merge(options[:headers] || {})
+      return headers unless local[:is_hash]
+      if options[:nonjson_data]
+        headers.delete('Content-Type')
+      else
+        headers[:no_restclient_headers] = true
+      end
+      headers
+    end
+
+    def handle_proxy(options, local)
+      return unless local[:proxy]
+      RestClient.proxy = local[:proxy]
+      options[:headers].delete(:use_proxy)
+    end
+
+    def calc_body(options, local)
+      return '' unless options[:body]
+      if local[:nonjson_data] || !local[:is_hash]
+        options[:body]
+      else
+        options[:body].to_json
+      end
+    end
+
+    def send_restclient(method, url, body, headers)
+      if body?(method)
+        RestClient.send(method, url, body, headers)
+      else
+        RestClient.send(method, url, headers)
+      end
+    end
+
+    def make_request(method, url, options = {})
+      local_options = split_options(options)
+      handle_proxy(options, local_options)
+      hdrs = calc_headers(options, local_options)
+      send_restclient(method, get_url(url),
+                      calc_body(options, local_options), hdrs)
+    rescue RestClient::Exception => e
+      e.response
     end
 
     private
+
     def base_headers
       { content_type: :json }.merge(Airborne.configuration.headers || {})
     end
   end
 
+  # Extend airborne's expectations
   module RequestExpectations
     def call_with_relative_path(data, args)
       if args.length == 2
@@ -111,17 +171,14 @@ module Airborne
     end
   end
 
+  # extension to handle hash value checking
   module PathMatcher
     def get_by_path(path, json, &block)
-      fail PathError, "Invalid Path, contains '..'" if /\.\./ =~ path
+      raise PathError, "Invalid Path, contains '..'" if /\.\./ =~ path
       type = false
-      if path.class == Symbol
-        parts = path.to_s.split('.')
-      else
-        parts = path.split('.')
-      end
+      parts = path.to_s.split('.')
       parts.each_with_index do |part, index|
-        if part == '*' || part == '?'
+        if %w[* ?].include?(part)
           ensure_array_or_hash(path, json)
           type = part
           if index < parts.length.pred
@@ -131,8 +188,9 @@ module Airborne
         end
         begin
           json = process_json(part, json)
-        rescue
-          raise PathError, "Expected #{json.class}\nto be an object with property #{part}"
+        rescue StandardError
+          raise PathError,
+                "Expected #{json.class}\nto be an object with property #{part}"
         end
       end
       if type == '*'
@@ -140,7 +198,7 @@ module Airborne
         when 'Array'
           expect_all(json, &block)
         when 'Hash'
-          json.each do |k,v|
+          json.each do |k, _v|
             yield json[k]
           end
         end
@@ -152,8 +210,10 @@ module Airborne
     end
 
     def ensure_array_or_hash(path, json)
-      fail RSpec::Expectations::ExpectationNotMetError, "Expected #{path} to be array or hash, got #{json.class} from JSON response" unless
-        json.class == Array || json.class == Hash
+      return if json.class == Array || json.class == Hash
+      raise RSpec::Expectations::ExpectationNotMetError,
+            "Expected #{path} to be array or hash, got #{json.class}"\
+            ' from JSON response'
     end
   end
 end
