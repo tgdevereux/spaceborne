@@ -97,7 +97,6 @@ module Airborne
     def handle_proxy(options, local)
       return unless local[:proxy]
       RestClient.proxy = local[:proxy]
-      options[:headers].delete(:use_proxy)
     end
 
     def calc_body(options, local)
@@ -118,6 +117,7 @@ module Airborne
     end
 
     def make_request(method, url, options = {})
+      @json_body = nil
       local_options = split_options(options)
       handle_proxy(options, local_options)
       hdrs = calc_headers(options, local_options)
