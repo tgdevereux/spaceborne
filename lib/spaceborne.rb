@@ -122,6 +122,7 @@ module Airborne
       handle_proxy(options, local_options)
       hdrs = calc_headers(options, local_options)
       send_restclient(method, get_url(url),
+                      @request_body =
                       calc_body(options, local_options), hdrs)
     rescue RestClient::Exception => e
       e.response
