@@ -12,31 +12,31 @@ module Spaceborne
   end
 
   def add_time
-    "TIME: #{Time.now.strftime('%d/%m/%Y %H:%M')}"
+    "TIME: #{Time.now.strftime('%d/%m/%Y %H:%M')}\n"
   end
 
   def add_request
     if @request_body
-      "REQUEST: #{response.request.method.upcase} #{response.request.url}"\
-      "  HEADERS:\n#{JSON.pretty_generate(response.request.headers)}"\
-      "  PAYLOAD:\n#{@request_body}"
+      "REQUEST: #{response.request.method.upcase} #{response.request.url}\n"\
+      "  HEADERS:\n#{JSON.pretty_generate(response.request.headers)}\n"\
+      "  PAYLOAD:\n#{@request_body}\n"
     else
       ''
     end
   end
 
   def add_response
-    "RESPONSE: #{response.code}"\
-    "  HEADERS:\n#{JSON.pretty_generate(response.headers)}"\
+    "RESPONSE: #{response.code}\n"\
+    "  HEADERS:\n#{JSON.pretty_generate(response.headers)\n"\
     << response_body
   end
 
   def response_body
     return '' if response.request.method.casecmp('head').zero?
     str = if json?(response.headers)
-            "  JSON_BODY\n#{JSON.pretty_generate(json_body)}"
+            "  JSON_BODY\n#{JSON.pretty_generate(json_body)}\n"
           else
-            "  BODY\n#{response.body}"
+            "  BODY\n#{response.body}\n"
           end
     str
   end
