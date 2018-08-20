@@ -27,7 +27,7 @@ module Spaceborne
 
   def add_response
     "RESPONSE: #{response.code}\n"\
-    "  HEADERS:\n#{JSON.pretty_generate(response.headers)\n"\
+    "  HEADERS:\n#{JSON.pretty_generate(response.headers)}\n"\
     << response_body
   end
 
@@ -94,7 +94,7 @@ module Airborne
       headers
     end
 
-    def handle_proxy(options, local)
+    def handle_proxy(_options, local)
       return unless local[:proxy]
       RestClient.proxy = local[:proxy]
     end
