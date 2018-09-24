@@ -41,7 +41,7 @@ module Spaceborne
     str
   end
 
-  def request_info(str = '')
+  def request_info(str = "\n")
     str << add_time << add_request << add_response
     str
   end
@@ -50,7 +50,7 @@ module Spaceborne
     yield
   rescue Exception => e
     raise e unless response
-    puts request_info
+    e.message << request_info
     raise e
   end
 end
@@ -121,9 +121,8 @@ module Airborne
       local_options = split_options(options)
       handle_proxy(options, local_options)
       hdrs = calc_headers(options, local_options)
-      send_restclient(method, get_url(url),
-                      @request_body =
-                      calc_body(options, local_options), hdrs)
+      @request_body = calc_body(options, local_options)
+      send_restclient(method, get_url(url), @request_body, hdrs)
     rescue RestClient::Exception => e
       e.response
     end

@@ -24,8 +24,7 @@ describe Spaceborne do
           expect_status(200)
           expect_json(name: 'Alexandra')
         end
-      end .to raise_error(RSpec::Expectations::ExpectationNotMetError) \
-        .and output.to_stdout
+      end .to raise_error(RSpec::Expectations::ExpectationNotMetError)
     end
     specify do
       expect do
@@ -35,8 +34,7 @@ describe Spaceborne do
           expect_status(200)
           expect_json(name: 'Alexandra')
         end
-      end .to raise_error(RSpec::Expectations::ExpectationNotMetError) \
-        .and output.to_stdout
+      end .to raise_error(RSpec::Expectations::ExpectationNotMetError)
     end
     specify do
       expect do
