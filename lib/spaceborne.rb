@@ -85,12 +85,9 @@ module Airborne
 
     def calc_headers(options, local)
       headers = base_headers.merge(options[:headers] || {})
+      headers[:no_restclient_headers] = true
       return headers unless local[:is_hash]
-      if options[:nonjson_data]
-        headers.delete('Content-Type')
-      else
-        headers[:no_restclient_headers] = true
-      end
+      headers.delete('Content-Type') if options[:nonjson_data]
       headers
     end
 
@@ -130,7 +127,8 @@ module Airborne
     private
 
     def base_headers
-      { content_type: :json }.merge(Airborne.configuration.headers || {})
+      { content_type: 'application/json' }
+        .merge(Airborne.configuration.headers || {})
     end
   end
 
