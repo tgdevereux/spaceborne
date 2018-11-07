@@ -60,6 +60,6 @@ describe 'expect_json_types wih path' do
     get '/array_with_index'
     expect do
       expect_json_types('cars.0.make', make: :string)
-    end.to raise_error(ExpectationError, "Expected String Tesla\nto be an object with property make")
+    end.to raise_error(ExpectationError, /Expected String Tesla\nto be an object with property make.*/)
   end
 end

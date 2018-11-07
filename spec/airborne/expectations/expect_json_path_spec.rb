@@ -103,6 +103,6 @@ describe 'expect_json with path' do
     get '/array_with_index'
     expect do
       expect_json('cars.0.make', make: 'Tesla')
-    end.to raise_error(ExpectationError, "Expected String Tesla\nto be an object with property make")
+    end.to raise_error(ExpectationError, /Expected String Tesla\nto be an object with property make.*/)
   end
 end

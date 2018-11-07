@@ -94,4 +94,10 @@ describe Spaceborne do
     expect_header(nonjson_data: nil)
     expect_header(content_type: nil)
   end
+
+  it 'gives information about path on failure' do
+    mock_get('simple_path_get')
+    get '/simple_path_get'
+    expect_json('address', street: 'Area 51', city: 'Roswell', state: 'NM')
+  end
 end

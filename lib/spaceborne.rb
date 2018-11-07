@@ -144,27 +144,42 @@ module Airborne
       end
     end
 
+    def exception_path_adder(path)
+      yield
+    rescue Airborne::ExpectationError => e
+      e.message << " at location #{path}"
+      raise e
+    end
+
     def expect_json_types(*args)
       call_with_relative_path(json_body, args) do |param, body|
-        expect_json_types_impl(param, body)
+        exception_path_adder(args[0]) do
+          expect_json_types_impl(param, body)
+        end
       end
     end
 
     def expect_json(*args)
       call_with_relative_path(json_body, args) do |param, body|
-        expect_json_impl(param, body)
+        exception_path_adder(args[0]) do
+          expect_json_impl(param, body)
+        end
       end
     end
 
     def expect_header_types(*args)
       call_with_relative_path(response.headers, args) do |param, body|
-        expect_json_types_impl(param, body)
+        exception_path_adder(args[0]) do
+          expect_json_types_impl(param, body)
+        end
       end
     end
 
     def expect_header(*args)
       call_with_relative_path(response.headers, args) do |param, body|
-        expect_json_impl(param, body)
+        exception_path_adder(args[0]) do
+          expect_json_impl(param, body)
+        end
       end
     end
   end
