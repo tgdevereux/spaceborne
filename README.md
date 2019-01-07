@@ -89,7 +89,7 @@ describe 'simple get sample' do
   end
 end
 ```
-The parts of the example outside of the wrap_request block are typical rspec. The wrap_request is a spaceborne concept, saying that if anything fails inside of the block, to ouput to stdout information about the request, and response. This is to work around the issue of an expectation failing, and having good info about why, but having no idea what the request or response were that caused the failure. The actual request is done on the get line. Validation of the response is the following expect_ lines.
+The parts of the example outside of the `wrap_request` block are typical rspec. The `wrap_request` is a spaceborne concept, saying that if anything fails inside of that block, then the failure contains the request, response, as well as why it failed. This is to work around the issue of an expectation failing, and having good info about why, but having no idea what the request or response were that caused the failure. The actual request is done on the `get` line. Validation of the response is the following `expect_*` lines.
 
 #### Parts of response to validate
 
@@ -198,9 +198,9 @@ Validation for headers follows the same pattern as above, although nesting of mu
 ## Extensions to Airborne
 
 1. Uses curlyrest to allow extension of rest-client with curl requests
-2. Uses wrap_request to bundle groups of expectations so that if any fail, you will actually see the request and response printed out, rather than just seeing the expectation that failed
-3. json_body is only parsed once after a request rather than on each expect call
-4. Expectations for headers use the same form as the expectations for json bodies
+2. Uses wrap_request to bundle groups of expectations so that if any fail, the failure will contain the request and response, rather than just seeing the expectation that failed
+3. json_body is only parsed once after a request rather than on each expect call (spaceborne resets the body on a new http request).
+4. Expectations for headers use the same form as the expectations for json bodies.
   * `expect_header same arguments/handling as expect_json`
   * `expect_header_types same arguments/handling as expect_json_types`
 5. It is possible to use non-json data in a request
@@ -221,7 +221,7 @@ The following example shows how this works
   }
 }
 ```
-You can now validate the fact that each element in the collection has a key which is variant, but a value that has a defined format (first and last are strings).
+You can now validate the fact that each element in the collection has a key which is variant, but a value that has a defined format (the first and last field values are strings).
 
     expect_json_types('array_of_hashes.*.*', first: :string, last: :string)
     expect_json_types('hash_of_hashes.*', first: :string, last: :string)
