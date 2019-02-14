@@ -7,8 +7,8 @@ require 'json'
 # module for apitesting with spaceborne
 module Spaceborne
   def json?(headers)
-    headers.key?(:content_type) &&
-      headers[:content_type].include?('application/json')
+    headers.key?('Content-Type') &&
+      headers['Content-Type'].include?('application/json')
   end
 
   def add_time
@@ -127,7 +127,7 @@ module Airborne
     private
 
     def base_headers
-      { content_type: 'application/json' }
+      { "Content-Type" => 'application/json' }
         .merge(Airborne.configuration.headers || {})
     end
   end

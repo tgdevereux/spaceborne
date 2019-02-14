@@ -12,8 +12,8 @@ describe Spaceborne do
       raise_error(RSpec::Expectations::ExpectationNotMetError)
   end
   it 'json detects json headers' do
-    expect(json?(content_type: 'application/json')).to eq(true)
-    expect(json?(content_type: 'application/text')).to eq(false)
+    expect(json?("Content-Type" => 'application/json')).to eq(true)
+    expect(json?("Content-Type" => 'application/text')).to eq(false)
   end
   context 'wrap_request' do
     specify do
@@ -29,7 +29,7 @@ describe Spaceborne do
     specify do
       expect do
         wrap_request do
-          mock_get('spaceborne_readme_1', content_type: 'application/json')
+          mock_get('spaceborne_readme_1', "Content-Type" => 'application/json')
           get '/spaceborne_readme_1'
           expect_status(200)
           expect_json(name: 'Alexandra')
@@ -92,7 +92,7 @@ describe Spaceborne do
     mock_post('spaceborne_readme_2')
     post '/spaceborne_readme_2', { foo: 'bar' }, nonjson_data: true
     expect_header(nonjson_data: nil)
-    expect_header(content_type: nil)
+    expect_header("Content-Type" => nil)
   end
 
   it 'gives information about path on failure' do
