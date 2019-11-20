@@ -33,6 +33,7 @@ module Spaceborne
 
   def response_body
     return '' if response.request.method.casecmp('head').zero?
+
     str = if json?(response.headers)
             "  JSON_BODY\n#{JSON.pretty_generate(json_body)}\n"
           else
@@ -50,6 +51,7 @@ module Spaceborne
     yield
   rescue Exception => e
     raise e unless response
+
     e.message << request_info
     raise e
   end
@@ -87,17 +89,20 @@ module Airborne
       headers = base_headers.merge(options[:headers] || {})
       headers[:no_restclient_headers] = true
       return headers unless local[:is_hash]
+
       headers.delete('Content-Type') if options[:nonjson_data]
       headers
     end
 
     def handle_proxy(_options, local)
       return unless local[:proxy]
+
       RestClient.proxy = local[:proxy]
     end
 
     def calc_body(options, local)
       return '' unless options[:body]
+
       if local[:nonjson_data] || !local[:is_hash]
         options[:body]
       else
@@ -120,6 +125,8 @@ module Airborne
       hdrs = calc_headers(options, local_options)
       @request_body = calc_body(options, local_options)
       send_restclient(method, get_url(url), @request_body, hdrs)
+    rescue RestClient::ServerBrokeConnection => e
+      raise e
     rescue RestClient::Exception => e
       e.response
     end
@@ -127,7 +134,7 @@ module Airborne
     private
 
     def base_headers
-      { "Content-Type" => 'application/json' }
+      { 'Content-Type' => 'application/json' }
         .merge(Airborne.configuration.headers || {})
     end
   end
@@ -186,8 +193,37 @@ module Airborne
 
   # extension to handle hash value checking
   module PathMatcher
+    def do_process_json(part, json)
+      json = process_json(part, json)
+    rescue StandardError
+      raise PathError,
+            "Expected #{json.class}\nto be an object with property #{part}"
+    end
+
+    def handle_container(json, &block)
+      case json.class.name
+      when 'Array'
+        expect_all(json, &block)
+      when 'Hash'
+        json.each do |k, _v|
+          yield json[k]
+        end
+      end
+    end
+
+    def handle_type(type, path, json, &block)
+      if type == '*'
+        handle_container(json, &block)
+      elsif type == '?'
+        expect_one(path, json, &block)
+      else
+        yield json
+      end
+    end
+
     def get_by_path(path, json, &block)
       raise PathError, "Invalid Path, contains '..'" if /\.\./ =~ path
+
       type = false
       parts = path.to_s.split('.')
       parts.each_with_index do |part, index|
@@ -199,31 +235,14 @@ module Airborne
           end
           next
         end
-        begin
-          json = process_json(part, json)
-        rescue StandardError
-          raise PathError,
-                "Expected #{json.class}\nto be an object with property #{part}"
-        end
+        json = do_process_json(part, json)
       end
-      if type == '*'
-        case json.class.name
-        when 'Array'
-          expect_all(json, &block)
-        when 'Hash'
-          json.each do |k, _v|
-            yield json[k]
-          end
-        end
-      elsif type == '?'
-        expect_one(path, json, &block)
-      else
-        yield json
-      end
+      handle_type(type, path, json, &block)
     end
 
     def ensure_array_or_hash(path, json)
       return if json.class == Array || json.class == Hash
+
       raise RSpec::Expectations::ExpectationNotMetError,
             "Expected #{path} to be array or hash, got #{json.class}"\
             ' from JSON response'

@@ -16,29 +16,29 @@ describe 'client requester' do
 
     expect(RestClient).to have_received(:send)
       .with(:get, 'http://www.example.com/foo',
-            "Content-Type" => 'application/json',
+            'Content-Type' => 'application/json',
             no_restclient_headers: true)
   end
 
   it 'should override headers with option[:headers]' do
-    get '/foo', "Content-Type" => 'application/x-www-form-urlencoded'
+    get '/foo', 'Content-Type' => 'application/x-www-form-urlencoded'
 
     expect(RestClient)
       .to have_received(:send)
       .with(:get, 'http://www.example.com/foo',
-            "Content-Type" => 'application/x-www-form-urlencoded',
+            'Content-Type' => 'application/x-www-form-urlencoded',
             no_restclient_headers: true)
   end
 
   it 'should override headers with airborne config headers' do
-    Airborne.configure { |config| config.headers = { "Content-Type" => 'text/plain' } }
+    Airborne.configure { |config| config.headers = { 'Content-Type' => 'text/plain' } }
 
     get '/foo'
 
     expect(RestClient)
       .to have_received(:send)
       .with(:get, 'http://www.example.com/foo',
-            "Content-Type" => 'text/plain',
+            'Content-Type' => 'text/plain',
             no_restclient_headers: true)
   end
 end
